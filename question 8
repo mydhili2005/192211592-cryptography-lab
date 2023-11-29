@@ -1,0 +1,51 @@
+import Counter
+import string
+
+def modular_inverse(a, m):
+    # Extended Euclidean Algorithm to find the modular multiplicative inverse
+    m0, x0, x1 = m, 0, 1
+    while a > 1:
+        q = a // m
+        m, a = a % m, m
+        x0, x1 = x1 - q * x0, x0
+    return x1 + m0 if x1 < 0 else x1
+
+def break_affine_cipher(ciphertext):
+    # Count letter frequencies in the ciphertext
+    letter_freq = Counter(ciphertext)
+    
+    # Determine the most frequent and second most frequent letters
+    most_frequent = letter_freq.most_common(1)[0][0]
+    second_most_frequent = letter_freq.most_common(2)[1][0]
+    
+    # Calculate the key (a, b) using the most frequent and second most frequent letters
+    a = (ord(most_frequent) - ord(second_most_frequent)) % 26
+    b = (ord(most_frequent) - ord('A')) % 26
+
+    # Calculate the modular inverse of a
+    a_inverse = modular_inverse(a, 26)
+
+    return a, b, a_inverse
+
+def decrypt_affine_cipher(ciphertext, a, b, a_inverse):
+    plaintext = ''
+    for char in ciphertext:
+        if char.isalpha():
+            base = 'A' if char.isupper() else 'a'
+            decrypted_char = chr((a_inverse * (ord(char) - ord(base) - b)) % 26 + ord(base))
+            plaintext += decrypted_char
+        else:
+            plaintext += char
+    return plaintext
+
+# Example ciphertext
+ciphertext = "BBUBBUUBBBUBBBUBBBUUBBUBUBUBUBBBBUUBUUBBUUBUBBBUBUBBBUBUUBBBUBBBUUBBUUBBUBUBBUUBUUBBBUBBUUBBB"
+
+# Break the affine cipher
+a, b, a_inverse = break_affine_cipher(ciphertext)
+
+# Decrypt the ciphertext using the found key
+decrypted_text = decrypt_affine_cipher(ciphertext, a, b, a_inverse)
+
+print("Affine Cipher Key (a, b):", a, b)
+print("Decrypted Plaintext:", decrypted_text)
